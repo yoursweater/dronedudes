@@ -1,0 +1,17 @@
+Metadata-Version: 2.1
+Name: codrone-edu
+Version: 2.2
+Summary: Python CoDrone EDU library
+Home-page: UNKNOWN
+Author: 
+Author-email: 
+License: UNKNOWN
+Platform: UNKNOWN
+Requires-Python: >=3.5
+Requires-Dist: pyserial>=3.5
+Requires-Dist: numpy
+Requires-Dist: colorama
+Requires-Dist: Pillow
+
+UNKNOWN
+

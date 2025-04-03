@@ -1,0 +1,5 @@
+codrone-edu==2.2
+colorama==0.4.6
+numpy==2.0.2
+pillow==11.1.0
+pyserial==3.5
