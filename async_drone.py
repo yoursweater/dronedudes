@@ -10,7 +10,6 @@ async def monitor_position(drone):
           print(f'distance: {distance}')
 
           drone.load_color_data()
-          print('color data loaded?')
           color_data = drone.get_color_data()
           print('sensor data acquired?')
           color = drone.predict_colors(color_data)
@@ -41,13 +40,13 @@ async def main():
         task = asyncio.create_task(monitor_position(drone))
         
         # Perform drone movements
-        await loop.run_in_executor(None, drone.takeoff)
-        await loop.run_in_executor(None, lambda: drone.move_distance(0, 0, 0.25, 1))
-        await loop.run_in_executor(None, lambda: drone.keep_distance(8, 10))
+        # await loop.run_in_executor(None, drone.takeoff)
+        # await loop.run_in_executor(None, lambda: drone.move_distance(0, 0, 0.25, 1))
+        # await loop.run_in_executor(None, lambda: drone.keep_distance(8, 10))
         
         # Allow monitoring to complete (or cancel after movements)
         try:
-            await asyncio.wait_for(task, timeout=5.0)
+            await asyncio.wait_for(task, timeout=20.0)
         except asyncio.TimeoutError:
             task.cancel()
             

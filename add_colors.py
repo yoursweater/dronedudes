@@ -7,7 +7,7 @@ drone.pair()
 
 
 dataset = "custom_color_data"
-colors = ["darkgreen", "white", "maroon", "pink", "yellow", "lightgreen", "blue", ]
+colors = ["blue", "green", "pink", "yellow",  ]
 for color in colors:
     data = []
     samples = 500
