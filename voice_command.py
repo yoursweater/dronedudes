@@ -44,7 +44,7 @@ def get_drone_command_from_text(text):
         You are an AI assistant interpreting voice commands for a CoDrone EDU drone.
         The available commands are: {', '.join(ALLOWED_COMMANDS)}.
         Some commands take parameters:
-        - move_forward, move_backward, move_left, move_right, turn_left, turn_right, move_up, move_down: require 'duration' (float, seconds, default 1.0).
+        - move_forward, move_backward, move_left, move_right, turn_left, turn_right, move_up, move_down: require 'distance' (float, default 50.0), 'unit' (string, default cm), and 'speed' (float, default 1.0).
         - set_throttle, set_yaw, set_roll, set_pitch: require 'power' (int, -100 to 100).
 
         Analyze the user's text and determine the single most likely drone command.
@@ -132,9 +132,13 @@ def execute_drone_command(drone, command_data):
             print("Executing: Emergency Stop")
             drone.emergency_stop()
         elif command == "move_forward":
-            duration = float(params.get("duration", 1.0))
-            print(f"Executing: Move Forward for {duration}s")
-            drone.move_forward(duration)
+            # duration = float(params.get("duration", 1.0))
+            distance = float(params.get("distance", 50.0))
+            unit = str(params.get("unit", "cm"))
+            speed = float(params.get("speed", 1.0))
+            print(f"Executing: Move Forward for {distance} {unit} {speed}")
+            # drone.move_forward(duration)
+            drone.move_forward(distance, unit, speed)
         elif command == "move_backward":
             duration = float(params.get("duration", 1.0))
             print(f"Executing: Move Backward for {duration}s")
@@ -199,8 +203,7 @@ def execute_drone_command(drone, command_data):
         else:
             print(f"Command '{command}' is not implemented.")
 
-    except codrone_edu.CoDroneError as e:
-        print(f"CoDrone Error executing '{command}': {e}")
+
     except ValueError as e:
          print(f"Parameter Error for command '{command}': {e}. Params: {params}")
     except Exception as e:
@@ -293,7 +296,7 @@ if __name__ == "__main__":
                     if command_name == "takeoff":
                         is_flying = True
                     elif command_name in ["land", "emergency_stop"]:
-                         is_flying = False
+                        is_flying = False
 
                     # Execute the command
                     execute_drone_command(drone, command_data)
@@ -316,8 +319,8 @@ if __name__ == "__main__":
                 # Consider landing or emergency stop here too
                 break
 
-    except codrone_edu.CoDroneError as e:
-        print(f"CoDrone connection error: {e}")
+    # except codrone_edu.CoDroneError as e:
+    #     print(f"CoDrone connection error: {e}")
     except Exception as e:
         print(f"An unexpected error occurred during setup or main loop: {e}")
     finally:
