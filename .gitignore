@@ -14,7 +14,7 @@ venv/
 env/
 
 # Specific virtual environment module
-.venv/lib/codrone_edu/
+!venv/lib/python3.9/site-packages/codrone_edu/
 
 # Unit test / coverage reports
 .coverage
