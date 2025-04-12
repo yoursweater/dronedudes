@@ -25,13 +25,12 @@ client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL) # Use t
 print('loaded client.')
 
 
-# CoDrone EDU commands we want ChatGPT to recognize
-# Keep this list relatively simple and clear
 ALLOWED_COMMANDS = [
     "takeoff", "land", "hover", "emergency_stop",
     "move_forward", "move_backward", "move_left", "move_right",
     "turn_left", "turn_right", "move_up", "move_down",
-    "set_throttle", "set_yaw", "set_roll", "set_pitch" # More advanced
+    "set_throttle", "set_yaw", "set_roll", "set_pitch",
+    "flip", "spiral"
 ]
 
 # --- ChatGPT Interaction ---
@@ -121,6 +120,12 @@ def execute_drone_command(drone, command_data):
             print("Executing: Takeoff")
             drone.takeoff()
             drone.hover(1) # Hover briefly after takeoff
+        elif command == "flip":
+            print("Executing: Flip")
+            drone.flip()
+        elif command == "spiral":
+            print("Executing: Spiral")
+            drone.spiral()
         elif command == "land":
             print("Executing: Land")
             drone.land()
@@ -132,25 +137,29 @@ def execute_drone_command(drone, command_data):
             print("Executing: Emergency Stop")
             drone.emergency_stop()
         elif command == "move_forward":
-            # duration = float(params.get("duration", 1.0))
             distance = float(params.get("distance", 50.0))
             unit = str(params.get("unit", "cm"))
             speed = float(params.get("speed", 1.0))
             print(f"Executing: Move Forward for {distance} {unit} {speed}")
-            # drone.move_forward(duration)
             drone.move_forward(distance, unit, speed)
         elif command == "move_backward":
-            duration = float(params.get("duration", 1.0))
-            print(f"Executing: Move Backward for {duration}s")
-            drone.move_backward(duration)
+            distance = float(params.get("distance", 50.0))
+            unit = str(params.get("unit", "cm"))
+            speed = float(params.get("speed", 1.0))
+            print(f"Executing: Move Backward for {distance} {unit} {speed}")
+            drone.move_backward(distance, unit, speed)
         elif command == "move_left":
-            duration = float(params.get("duration", 1.0))
-            print(f"Executing: Move Left for {duration}s")
-            drone.move_left(duration)
+            distance = float(params.get("distance", 50.0))
+            unit = str(params.get("unit", "cm"))
+            speed = float(params.get("speed", 1.0))
+            print(f"Executing: Move Left for {distance} {unit} {speed}")
+            drone.move_left(distance, unit, speed)
         elif command == "move_right":
-            duration = float(params.get("duration", 1.0))
-            print(f"Executing: Move Right for {duration}s")
-            drone.move_right(duration)
+            distance = float(params.get("distance", 50.0))
+            unit = str(params.get("unit", "cm"))
+            speed = float(params.get("speed", 1.0))
+            print(f"Executing: Move Right for {distance} {unit} {speed}")
+            drone.move_right(distance, unit, speed)
         elif command == "turn_left":
             duration = float(params.get("duration", 1.0)) # Duration based turning might be less precise
             # Alternative: Turn by degrees if library supports it well, requires different ChatGPT prompt
