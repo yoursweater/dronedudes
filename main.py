@@ -45,6 +45,7 @@ async def main():
     # print(drone.get_pos_x())
 
     #land
+    print('Successfully executed flight.')
     drone.land()
     drone.close()
   except Exception as e:

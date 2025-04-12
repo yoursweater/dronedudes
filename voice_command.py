@@ -1,4 +1,5 @@
 import codrone_edu
+from codrone_edu.drone import *
 import speech_recognition as sr
 import openai
 import os
@@ -11,11 +12,18 @@ from dotenv import load_dotenv # Optional: for loading API key from .env file
 # --- Configuration ---
 load_dotenv() # Load environment variables from .env file if it exists
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
 if not OPENAI_API_KEY:
     raise ValueError("OpenAI API key not found. Set the OPENAI_API_KEY environment variable.")
+if not OPENAI_BASE_URL:
+    raise ValueError("OpenAI API key not found. Set the OPENAI_BASE_URL environment variable.")
 
 openai.api_key = OPENAI_API_KEY
-client = openai.OpenAI(api_key=OPENAI_API_KEY) # Use the new client
+openai.base_url = OPENAI_BASE_URL
+client = openai.OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL) # Use the new client
+
+print('loaded client.')
+
 
 # CoDrone EDU commands we want ChatGPT to recognize
 # Keep this list relatively simple and clear
@@ -33,24 +41,24 @@ def get_drone_command_from_text(text):
     try:
         # This system prompt is CRUCIAL for getting reliable JSON output
         system_prompt = f"""
-You are an AI assistant interpreting voice commands for a CoDrone EDU drone.
-The available commands are: {', '.join(ALLOWED_COMMANDS)}.
-Some commands take parameters:
-- move_forward, move_backward, move_left, move_right, turn_left, turn_right, move_up, move_down: require 'duration' (float, seconds, default 1.0).
-- set_throttle, set_yaw, set_roll, set_pitch: require 'power' (int, -100 to 100).
+        You are an AI assistant interpreting voice commands for a CoDrone EDU drone.
+        The available commands are: {', '.join(ALLOWED_COMMANDS)}.
+        Some commands take parameters:
+        - move_forward, move_backward, move_left, move_right, turn_left, turn_right, move_up, move_down: require 'duration' (float, seconds, default 1.0).
+        - set_throttle, set_yaw, set_roll, set_pitch: require 'power' (int, -100 to 100).
 
-Analyze the user's text and determine the single most likely drone command.
-Respond ONLY with a JSON object containing the 'command' (string) and any necessary 'parameters' (object).
-Example 1: User says "fly forward for 2 seconds" -> {{"command": "move_forward", "parameters": {{"duration": 2.0}}}}
-Example 2: User says "take off" -> {{"command": "takeoff", "parameters": {{}}}}
-Example 3: User says "turn left" -> {{"command": "turn_left", "parameters": {{"duration": 1.0}}}}
-Example 4: User says "stop everything" -> {{"command": "emergency_stop", "parameters": {{}}}}
-Example 5: User says "increase altitude" -> {{"command": "move_up", "parameters": {{"duration": 1.0}}}}
-Example 6: User says "set throttle to 50" -> {{"command": "set_throttle", "parameters": {{"power": 50}}}}
+        Analyze the user's text and determine the single most likely drone command.
+        Respond ONLY with a JSON object containing the 'command' (string) and any necessary 'parameters' (object).
+        Example 1: User says "fly forward for 2 seconds" -> {{"command": "move_forward", "parameters": {{"duration": 2.0}}}}
+        Example 2: User says "take off" -> {{"command": "takeoff", "parameters": {{}}}}
+        Example 3: User says "turn left" -> {{"command": "turn_left", "parameters": {{"duration": 1.0}}}}
+        Example 4: User says "stop everything" -> {{"command": "emergency_stop", "parameters": {{}}}}
+        Example 5: User says "increase altitude" -> {{"command": "move_up", "parameters": {{"duration": 1.0}}}}
+        Example 6: User says "set throttle to 50" -> {{"command": "set_throttle", "parameters": {{"power": 50}}}}
 
-If the command is unclear or not on the allowed list, respond with: {{"command": "unknown", "parameters": {{}}}}
-Do not add any explanations outside the JSON structure.
-"""
+        If the command is unclear or not on the allowed list, respond with: {{"command": "unknown", "parameters": {{}}}}
+        Do not add any explanations outside the JSON structure.
+        """
         response = client.chat.completions.create(
             model="gpt-3.5-turbo-1106", # Or gpt-4 if preferred. Newer models often better at following instructions
             messages=[
@@ -70,13 +78,15 @@ Do not add any explanations outside the JSON structure.
         if response_content.startswith("```json"):
             response_content = response_content[7:-3].strip()
         elif response_content.startswith("```"):
-             response_content = response_content[3:-3].strip()
+            response_content = response_content[3:-3].strip()
 
 
         command_data = json.loads(response_content)
 
         # Validate basic structure
         if isinstance(command_data, dict) and "command" in command_data:
+             print('command data:')
+             print(command_data)
              # Further validation: check if command is allowed
              if command_data["command"] in ALLOWED_COMMANDS or command_data["command"] == "unknown":
                 return command_data
@@ -243,7 +253,8 @@ def listen_and_transcribe(recognizer, audio_queue, stop_event):
 
 # --- Main Execution ---
 if __name__ == "__main__":
-    drone = codrone_edu.CoDrone()
+    # drone = codrone_edu.CoDrone()
+    drone = Drone()
     is_flying = False
     command_queue = queue.Queue() # Queue for commands from listening thread
     stop_listening = threading.Event()
