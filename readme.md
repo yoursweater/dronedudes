@@ -1,1 +1,1 @@
-pip install codrone-edu
+pip install codrone-edu# dronedudes
