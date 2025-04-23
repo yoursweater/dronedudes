@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <button>Record</button>
+  <script>
+    // Declare variables to hold the media recorder, recorded audio chunks, and recording state
+    let mediaRecorder;
+    let audioChunks = [];
+    let isRecording = false;
+
+    // Get a reference to the button in the HTML
+    const button = document.querySelector('button');
+
+    // Add a click event listener to the button
+    button.addEventListener('click', async () => {
+      if (!isRecording) {
+        // If not currently recording, start recording
+        await startRecording();
+        button.textContent = 'Stop Recording'; // Update button text
+        isRecording = true;
+      } else {
+        // If currently recording, stop recording
+        stopRecording();
+        button.textContent = 'Record'; // Reset button text
+        isRecording = false;
+      }
+    });
+
+    // Function to start recording audio
+    async function startRecording() {
+      // Ask the browser for access to the microphone
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+      // Create a new MediaRecorder to record audio from the stream
+      mediaRecorder = new MediaRecorder(stream);
+
+      // Clear any previously recorded audio chunks
+      audioChunks = [];
+
+      // Event handler: called when there’s audio data available
+      mediaRecorder.ondataavailable = event => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data); // Save the recorded chunk
+        }
+      };
+
+      // Event handler: called when recording stops
+      mediaRecorder.onstop = () => {
+        // Combine all the audio chunks into a single Blob object
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+
+        // Send the audio blob to the server
+        sendAudio(audioBlob);
+      };
+
+      // Start recording
+      mediaRecorder.start();
+      console.log('Recording started...');
+    }
+
+    // Function to stop the recording
+    function stopRecording() {
+      if (mediaRecorder) {
+        mediaRecorder.stop(); // This will trigger the `onstop` event
+        console.log('Recording stopped.');
+      }
+    }
+
+    // Function to upload the recorded audio to the server
+    async function sendAudio(audioBlob) {
+      // Create a FormData object and append the audio file
+      const formData = new FormData();
+      formData.append('audio', audioBlob, 'recording.webm');
+
+      try {
+        // Send the form data via POST to the /upload endpoint
+        const response = await fetch('/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        // Parse the JSON response from the server
+        const result = await response.json();
+        console.log('Upload success:', result);
+      } catch (error) {
+        // Handle any errors during upload
+        console.error('Upload failed:', error);
+      }
+    }
+  </script>
+</body>
+</html>
